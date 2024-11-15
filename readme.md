@@ -33,8 +33,25 @@ The pipeline consists of the following components:
    docker run --network kafka-network kafka-consumer
    ```
 
+#### Direct Python Setup (without Docker) for consumer
 
-
+1. Clone the repository
+   ```sh
+   git clone <repository-url>
+   cd <repository-directory>
+   ```
+2. Install required dependencies
+   ```sh
+   pip install -r requirements.txt
+   ```
+3. Set the PYTHONPATH to the current directory
+   ```sh
+   export PYTHONPATH=$(pwd)
+   ```
+4. Run the consumer directly
+   ```sh
+   python src/kafka-consumer.py
+   ```
 
 ## Data Flow
 
