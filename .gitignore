@@ -1,0 +1,32 @@
+# macOS
+.DS_Store
+
+# Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.swp
+*.swo
+*.egg-info/
+.eggs/
+
+# Virtual Environments
+env/
+venv/
+ENV/
+.VENV/
+.virtualenv/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Logs
+*.log
+
+# Byte-compiled / optimized / DLL files
+*.py[cod]
+
+# Cache files and directories
+.cache/
+*.pytest_cache/
