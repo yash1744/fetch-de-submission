@@ -14,7 +14,6 @@ def mask_pii(data: dict) -> dict:
     """
     masked_data = data.copy()
     pii_fields = {
-        "user_id": lambda x: f"{x[:4]}****{x[-4:]}",  # Partially mask UUID
         "ip": lambda x: ".".join(x.split(".")[:2]) + ".*.*",  # Mask last two segments of IP
         "device_id": lambda x: "****-**-" + x.split("-")[-1],  # Partially mask device_id
     }
