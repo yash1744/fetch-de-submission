@@ -52,7 +52,7 @@ The pipeline consists of the following components:
         ```sh
         docker compose down
         ```
-        
+
 ### Note: Producer, Consumer, and Generator Combined for Easy Setup
 
 In this setup, the **producer**, **consumer**, and **generator** services are combined into a single `docker-compose.yml` file for simplicity and ease of setup during development.
@@ -104,6 +104,7 @@ To run the tests for the consumer service, follow these steps:
  PII like device_id and ip are masked and enriched with additional metadata like the processing timestamp and latency. 
 - **Error Handling**: If errors occur during message processing or enrichment, the error handler routes the message to the DLQ, ensuring failed messages don’t block the pipeline.
 - **Output Publishing**: Valid messages are published to the output topic, `processed-user-login`and invalid messages are published to the output topic, `user-login-dlq`, using a Kafka producer. Offsets are committed only after successful message processing.
+- **Metrics**: Metrics and errors are printed to console for every 20 seconds, along with Critical message log where the errors are more than given threshold. In production these function is integrated to realtime monitoring and alarm services like Pager Duty, Data Dog, Prometheus etc
 
 ## Pipeline Efficiency, Scalability, and Fault Tolerance
 - **Efficiency**: The consumer utilizes Kafka's poll mechanism with a short timeout, enabling it to process messages in near real-time. Retrying message delivery with `acks='all'` and `retries=3` helps ensure messages are not lost due to network errors.
