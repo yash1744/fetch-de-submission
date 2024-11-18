@@ -1,6 +1,7 @@
 import pytest
 from kafka import KafkaProducer, KafkaConsumer
 from unittest.mock import MagicMock
+import os
 
 @pytest.fixture
 def mock_producer():
@@ -19,8 +20,9 @@ def mock_error_handler(mock_producer):
 def mock_user_login_processor(mock_producer, mock_consumer, mock_error_handler):
     from  src.user_login_processor import UserLoginProcessor
     return UserLoginProcessor(
-        "localhost:29092",
-        "user-login",
-        "processed-user-login",
-        "user-login-dlq"
+        bootstrap_servers=os.getenv("BOOTSTRAP_SERVERS", "localhost:29092"),
+        input_topic=os.getenv("INPUT_TOPIC", "user-login"),
+        output_topic=os.getenv("OUTPUT_TOPIC", "processed-user-login"),
+        dlq_topic=os.getenv("DLQ_TOPIC", "user-login-dlq")
+         
     )

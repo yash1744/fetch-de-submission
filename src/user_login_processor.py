@@ -6,6 +6,7 @@ import time
 import json
 from src.message_validator import MessageValidator
 from src.error_handler import ErrorHandler, ErrorType
+from src.ETL import mask_pii,_enrich_message
 from typing import Optional, Dict, Any
 from src.logger import logger
 
@@ -38,7 +39,7 @@ class UserLoginProcessor:
     
     def _create_consumer(self):
         """Create Kafka consumer with retry logic."""
-        retries = 1000
+        retries = 3
         for attempt in range(retries):
             try:
                 return KafkaConsumer(
@@ -106,8 +107,8 @@ class UserLoginProcessor:
         try:
             # Validate message
 
-            is_valid, error_message = MessageValidator.validate_message(message)
-            if not is_valid:
+            valid, error_message = MessageValidator.validate_message(message)
+            if not valid:
                 self.error_handler.handle_error(
                     ErrorType.VALIDATION_ERROR,
                     message,
@@ -116,10 +117,11 @@ class UserLoginProcessor:
                 self._increment_error_count()
                 return None
             else:
-                logger.info(f"Message validated: {message}")
-            
+                message = mask_pii(message)
+                
             # Enrich message
-            processed_message = self._enrich_message(message)
+            processed_message = _enrich_message(message)
+            logger.info(f"Processed message: {processed_message}")
             
             # Update metrics
             self._update_metrics(processed_message)
@@ -142,14 +144,7 @@ class UserLoginProcessor:
             self._increment_error_count()
         return None
 
-    def _enrich_message(self, message: Dict[str, Any]) -> Dict[str, Any]:
-        """Enrich message with additional data."""
-        enriched = message.copy()
-        enriched.update({
-            'processed_timestamp': int(time.time()),
-            'processing_latency': int(time.time()) - int(message['timestamp']),
-        })
-        return enriched
+    
 
     def run(self):
         """Main processing loop with error handling."""
@@ -159,7 +154,7 @@ class UserLoginProcessor:
             try:
                 message_batch = self.consumer.poll(timeout_ms=1000)
                 
-                for topic_partition, messages in message_batch.items():
+                for _, messages in message_batch.items():
                     for message in messages:
                         try:
                             # Process message
