@@ -40,7 +40,7 @@ services:
     networks:
       - kafka-network  
 
-  consumer:
+  consumer-service:
     build: .
     depends_on:
       - kafka

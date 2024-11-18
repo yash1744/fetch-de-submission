@@ -52,8 +52,22 @@ The pipeline consists of the following components:
         ```sh
         docker compose down
         ```
+        
+### Note: Producer, Consumer, and Generator Combined for Easy Setup
 
-## Running Tests with pytest 
+In this setup, the **producer**, **consumer**, and **generator** services are combined into a single `docker-compose.yml` file for simplicity and ease of setup during development.
+
+However, in a **production environment**, these services are typically separated into distinct deployments and communicate over a network layer. This setup allows for independent scaling of each service based on workload parameters, such as Kafka consumer lag, the number of partitions, or the rate at which the generator produces data. Tools like **Kubernetes** or other orchestration platforms can be used to manage this scaling and ensure optimal performance.
+
+## Running tests with Docker :
+   - If you're running the tests within a Docker container, you can execute pytest within the container.
+     ```sh
+     docker exec -it consumer-service pytest
+     ```
+
+   - This will execute the tests inside the running container.
+
+## Running Tests with without docker (pytest) 
 ###### Prerequisites 
 Python > 3.7
 
@@ -82,19 +96,12 @@ To run the tests for the consumer service, follow these steps:
 4. **Check test results**:
    - After running the tests, pytest will display the test results, including passed, failed, and skipped tests.
 
-5. **Running tests with Docker** :
-   - If you're running the tests within a Docker container, you can execute pytest within the container.
-     ```sh
-     docker exec -it consumer-service pytest
-     ```
-
-   - This will execute the tests inside the running container.
 
 
 ## Data Flow
 - **Message Consumption**: A Kafka consumer reads user login events from the input topic.
 - **Message Validation and Processing**: Each message is validated by `MessageValidator`,
- PII are masked and  enriched with additional metadata like the processing timestamp and latency. 
+ PII like device_id and ip are masked and enriched with additional metadata like the processing timestamp and latency. 
 - **Error Handling**: If errors occur during message processing or enrichment, the error handler routes the message to the DLQ, ensuring failed messages don’t block the pipeline.
 - **Output Publishing**: Valid messages are published to the output topic, `processed-user-login`and invalid messages are published to the output topic, `user-login-dlq`, using a Kafka producer. Offsets are committed only after successful message processing.
 
@@ -112,6 +119,7 @@ To run the tests for the consumer service, follow these steps:
 
 ### What other components would you want to add to make this production ready?
 - Monitoring and Logging: To ensure system health, use Prometheus to collect and store metrics about resource usage, system performance, and Kafka consumer lag, while Grafana helps visualize these metrics for easy monitoring. For log management, use ELK Stack or Fluentd to centralize and analyze logs from your application and infrastructure, making it easier to troubleshoot and maintain.
+
 - Alerting and Auto-scaling: Set up Prometheus Alerts to notify your team about issues like high Kafka lag or service failures, ensuring proactive management. If using kubernetes for orchestration, Enable Kubernetes Horizontal Pod Autoscaler (HPA) to dynamically scale consumer pods based on the incoming traffic or Kafka lag, improving system performance during peak loads.
 
 - Security: Use SSL/TLS to secure Kafka communication and configure Kubernetes Network Policies to restrict access to specific services and improve security. Implement Role-Based Access Control (RBAC) in Kubernetes to restrict access to sensitive resources, ensuring that only authorized users or services can interact with the critical infrastructure.
@@ -120,7 +128,7 @@ To run the tests for the consumer service, follow these steps:
 
 - Partitioning Kafka Topics: Increasing the number of partitions in Kafka allows messages to be distributed across multiple brokers, improving throughput and parallel processing. This enables multiple consumers to handle different partitions of the same topic efficiently.
 
-- Horizontal Scaling: Kubernetes enables you to scale consumer pods by adding more replicas to handle growing traffic. The Horizontal Pod Autoscaler (HPA) automatically adjusts the number of pods based on metrics like Kafka message lag or resource usage.
+- Horizontal Scaling: Using Orchestration service like Kubernetes enables you to scale consumer pods by adding more replicas to handle growing traffic. The Horizontal Pod Autoscaler (HPA) automatically adjusts the number of pods based on metrics like Kafka message lag or resource usage.
 
 - Distributed Consumer Load Balancing: Kafka Consumer Groups allow multiple consumers to process messages from different partitions concurrently. This distributed approach ensures efficient message processing and prevents any single consumer from being overloaded.
 
